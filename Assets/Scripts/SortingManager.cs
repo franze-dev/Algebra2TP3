@@ -133,6 +133,24 @@ public static class SortingManager
             list[j + 1] = key;
         }
     }
+
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/selection-sort-algorithm-2/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    public static void SelectionSort<T>(List<T> list) where T : IComparable
+    {
+        for (int i = 0; i < list.Count - 1; i++)
+        {
+            int minIdx = i;
+            for (int j = i + 1; j < list.Count; j++)
+                if (list[j].CompareTo(list[minIdx]) < 0)
+                    minIdx = j;
+            Swap(list, minIdx, i);
+        }
+    }
+
     #endregion
 
     #region O(n log^2 n)
