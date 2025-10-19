@@ -192,6 +192,173 @@ public static class SortingManager
 
     #endregion
 
+    #region O(n log n)
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/merge-sort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    public static void MergeSort<T>(List<T> list) where T : IComparable
+    {
+        MergeSort(list, 0, list.Count - 1);
+    }
+
+    private static void MergeSort<T>(List<T> list, int left, int right) where T : IComparable
+    {
+        if (left < right)
+        {
+            int mid = (left + (right - 1)) / 2;
+            MergeSort(list, left, mid);
+            MergeSort(list, mid + 1, right);
+            Merge(list, left, mid, right);
+        }
+    }
+
+    private static void Merge<T>(List<T> list, int left, int mid, int right) where T : IComparable
+    {
+        int lSize = mid - left + 1;
+        int rSize = right - mid;
+
+        T[] Left = new T[lSize];
+        T[] Right = new T[rSize];
+
+        for (int i = 0; i < lSize; ++i)
+            Left[i] = list[left + i];
+
+        for (int j = 0; j < rSize; ++j)
+            Right[j] = list[mid + 1 + j];
+
+        int lIdx = 0;
+        int rIdx = 0;
+
+        int mIdx = left;
+        while (lIdx < lSize && rIdx < rSize)
+        {
+            if (Left[lIdx].CompareTo(Right[rIdx]) <= 0)
+            {
+                list[mIdx] = Left[lIdx];
+                lIdx++;
+            }
+            else
+            {
+                list[mIdx] = Right[rIdx];
+                rIdx++;
+            }
+            mIdx++;
+        }
+
+        while (lIdx < lSize)
+        {
+            list[mIdx] = Left[lIdx];
+            lIdx++;
+            mIdx++;
+        }
+
+        while (rIdx < rSize)
+        {
+            list[mIdx] = Right[rIdx];
+            rIdx++;
+            mIdx++;
+        }
+    }
+
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/heap-sort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    public static void HeapSort<T>(List<T> list) where T : IComparable
+    {
+        for (int i = list.Count / 2 - 1; i >= 0; i--)
+            Heapify(list, i);
+
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            Swap(list, 0, i);
+            Heapify(list, i, 0);
+        }
+    }
+
+    private static void Heapify<T>(List<T> list, int i) where T : IComparable
+    {
+        Heapify(list, list.Count, i);
+    }
+
+    private static void Heapify<T>(List<T> list, int length, int i) where T : IComparable
+    {
+        int largest = i;
+
+        int left = 2 * i + 1;
+
+        int right = 2 * i + 2;
+
+        if (left < length && list[left].CompareTo(list[largest]) > 0)
+            largest = left;
+
+        if (right < length && list[right].CompareTo(list[largest]) > 0)
+            largest = right;
+
+        if (largest != i)
+        {
+            Swap(list, i, largest);
+            Heapify(list, length, largest);
+        }
+    }
+
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/quick-sort-algorithm/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    public static void QuickSort<T>(List<T> list) where T : IComparable
+    {
+        QuickSort(list, 0, list.Count - 1);
+    }
+
+    private static void QuickSort<T>(List<T> list, int low, int high) where T : IComparable
+    {
+        if (low < high)
+        {
+            int pi = Partition(list, low, high);
+            QuickSort(list, low, pi - 1);
+            QuickSort(list, pi + 1, high);
+        }
+    }
+
+    private static int Partition<T>(List<T> list, int low, int high) where T : IComparable
+    {
+        T pivot = list[high];
+        int i = (low - 1);
+
+        for (int j = low; j < high; j++)
+            if (list[j].CompareTo(pivot) < 0)
+            {
+                i++;
+                Swap(list, i, j);
+            }
+
+        Swap(list, i + 1, high);
+        return i + 1;
+    }
+
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/introsort-or-introspective-sort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    public static void IntroSort<T>(List<T> list) where T : IComparable
+    {
+        throw new NotImplementedException();
+    }
+
+    public static void AdaptiveMergeSort<T>(List<T> list) where T : IComparable
+    {
+        throw new NotImplementedException();
+    }
+    #endregion
+
     #region Utils
     private static void Shuffle<T>(List<T> list) where T : IComparable
     {
