@@ -295,19 +295,18 @@ public static class SortingManager
     /// <param name="list"></param>
     public static void HeapSort<T>(List<T> list) where T : IComparable
     {
-        for (int i = list.Count / 2 - 1; i >= 0; i--)
-            Heapify(list, i);
-
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            Swap(list, 0, i);
-            Heapify(list, i, 0);
-        }
+        HeapSort(list, 0, list.Count);
     }
 
-    private static void Heapify<T>(List<T> list, int i) where T : IComparable
+    public static void HeapSort<T>(List<T> list, int low, int high) where T : IComparable
     {
-        Heapify(list, list.Count, i);
+        for (int i = (high - low) / 2 - 1 + low; i >= low; i--)
+            Heapify(list, high, i);
+        for (int i = high - 1; i > low; i--)
+        {
+            Swap(list, low, i);
+            Heapify(list, i, low);
+        }
     }
 
     private static void Heapify<T>(List<T> list, int length, int i) where T : IComparable
