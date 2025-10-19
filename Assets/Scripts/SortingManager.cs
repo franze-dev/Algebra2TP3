@@ -1,5 +1,7 @@
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public static class SortingManager
 {
@@ -133,6 +135,63 @@ public static class SortingManager
     }
     #endregion
 
+    #region O(n log^2 n)
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/shell-sort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    public static void ShellSort<T>(List<T> list) where T : IComparable
+    {
+        for (int gap = list.Count / 2; gap > 0; gap /= 2)
+        {
+            for (int i = gap; i < list.Count; i++)
+            {
+                T temp = list[i];
+                int j;
+                for (j = i; j >= gap && list[j - gap].CompareTo(temp) > 0; j -= gap)
+                    list[j] = list[j - gap];
+
+                list[j] = temp;
+            }
+        }
+    }
+
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/bitonic-sort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    public static void BitonicSort<T>(List<T> list) where T : IComparable
+    {
+        BitonicSort(list, 0, list.Count, 1);
+    }
+
+    public static void BitonicSort<T>(List<T> list, int low, int count, int dir) where T : IComparable
+    {
+        if (count > 1)
+        {
+            int k = count / 2;
+            BitonicSort(list, low, k, 1);
+            BitonicSort(list, low + k, k, 0);
+            BitonicMerge(list, low, count, dir);
+        }
+    }
+
+    public static void BitonicMerge<T>(List<T> list, int low, int count, int dir) where T : IComparable
+    {
+        if (count > 1)
+        {
+            int k = count / 2;
+            for (int i = low; i < low + k; i++)
+                CompSwap(list, i, i + k, dir);
+            BitonicMerge(list, low, k, dir);
+            BitonicMerge(list, low + k, k, dir);
+        }
+    }
+
+    #endregion
+
     #region Utils
     private static void Shuffle<T>(List<T> list) where T : IComparable
     {
@@ -166,5 +225,12 @@ public static class SortingManager
         list[j] = temp;
     }
 
+    private static void CompSwap<T>(List<T> list, int i, int j, int dir) where T : IComparable
+    {
+        int res = list[i].CompareTo(list[j]) > 0 ? 1 : 0;
+
+        if (dir == res)
+            Swap(list, i, j);
+    }
     #endregion
 }
