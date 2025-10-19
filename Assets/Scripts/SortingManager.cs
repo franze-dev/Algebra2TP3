@@ -120,12 +120,17 @@ public static class SortingManager
     /// <exception cref="NotImplementedException"></exception>
     public static void InsertionSort<T>(List<T> list) where T : IComparable
     {
-        for (int i = 1; i < list.Count; ++i)
+        InsertionSort(list, 0, list.Count - 1);
+    }
+
+    public static void InsertionSort<T>(List<T> list, int low, int high) where T : IComparable
+    {
+        for (int i = low + 1; i <= high; ++i)
         {
             T key = list[i];
             int j = i - 1;
 
-            while (j >= 0 && list[j].CompareTo(key) > 0)
+            while (j >= low && list[j].CompareTo(key) > 0)
             {
                 list[j + 1] = list[j];
                 j--;
