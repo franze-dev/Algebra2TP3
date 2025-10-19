@@ -519,5 +519,10 @@ public static class SortingManager
         if (dir == res)
             Swap(list, i, j);
     }
+
+    private static bool IsPowerOfTwo(int count)
+    {
+        return count > 0 && Mathf.Log(count, 2) % 1 == 0;
+    }
     #endregion
 }
