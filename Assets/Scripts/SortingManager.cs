@@ -185,8 +185,11 @@ public static class SortingManager
         BitonicSort(list, 0, list.Count, 1);
     }
 
-    public static void BitonicSort<T>(List<T> list, int low, int count, int dir) where T : IComparable
+    private static void BitonicSort<T>(List<T> list, int low, int count, int dir) where T : IComparable
     {
+        if (!IsPowerOfTwo(list.Count))
+            throw new ArgumentException("BitonicSort: List size must be a power of two.");
+
         if (count > 1)
         {
             int k = count / 2;
@@ -196,7 +199,7 @@ public static class SortingManager
         }
     }
 
-    public static void BitonicMerge<T>(List<T> list, int low, int count, int dir) where T : IComparable
+    private static void BitonicMerge<T>(List<T> list, int low, int count, int dir) where T : IComparable
     {
         if (count > 1)
         {
