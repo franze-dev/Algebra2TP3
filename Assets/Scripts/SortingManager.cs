@@ -375,7 +375,50 @@ public static class SortingManager
     /// <exception cref="NotImplementedException"></exception>
     public static void IntroSort<T>(List<T> list) where T : IComparable
     {
-        throw new NotImplementedException();
+        int depthLimit = 2 * (int)Mathf.Floor(Mathf.Log(list.Count) / Mathf.Log(2));
+    }
+        IntroSort(list, 0, list.Count - 1, depthLimit);
+    }
+
+    private static void IntroSort<T>(List<T> list, int low, int high, int depthLimit) where T : IComparable
+    {
+        if (high - low > 16)
+        {
+            if (depthLimit == 0)
+            {
+                HeapSort(list, low, high - 1);
+                return;
+            }
+
+            depthLimit--;
+
+            int pivot = FindPivot(list, low, low + ((high - low) / 2) + 1, high);
+
+            Swap(list, pivot, high);
+
+            int p = Partition(list, low, high);
+
+            IntroSort(list, low, p - 1, depthLimit);
+            IntroSort(list, p + 1, high, depthLimit);
+        }
+        else
+            InsertionSort(list, low, high);
+    }
+
+    private static int FindPivot<T>(List<T> list, int i, int j, int k) where T : IComparable
+    {
+        T a = list[i];
+        T b = list[j];
+        T c = list[k];
+
+        if ((a.CompareTo(b) > 0 && a.CompareTo(c) < 0) ||
+            (a.CompareTo(b) < 0 && a.CompareTo(c) > 0))
+            return i;
+        else if ((b.CompareTo(a) > 0 && b.CompareTo(c) < 0) ||
+                 (b.CompareTo(a) < 0 && b.CompareTo(c) > 0))
+            return j;
+        else
+            return k;
     }
 
     public static void AdaptiveMergeSort<T>(List<T> list) where T : IComparable
