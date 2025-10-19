@@ -376,7 +376,7 @@ public static class SortingManager
     public static void IntroSort<T>(List<T> list) where T : IComparable
     {
         int depthLimit = 2 * (int)Mathf.Floor(Mathf.Log(list.Count) / Mathf.Log(2));
-    }
+
         IntroSort(list, 0, list.Count - 1, depthLimit);
     }
 
@@ -421,10 +421,37 @@ public static class SortingManager
             return k;
     }
 
+    /// <summary>
+    /// https://www.geeksforgeeks.org/dsa/timsort/
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
     public static void AdaptiveMergeSort<T>(List<T> list) where T : IComparable
     {
-        throw new NotImplementedException();
+        const int RUN = 32;
+
+        AdaptiveMergeSort(list, RUN);
     }
+
+    private static void AdaptiveMergeSort<T>(List<T> list, int chunkSize) where T : IComparable
+    {
+        for (int i = 0; i < list.Count; i += chunkSize)
+            InsertionSort(list, i, Mathf.Min(i + chunkSize - 1, list.Count - 1));
+
+        for (int size = chunkSize; size < list.Count; size *= 2)
+        {
+            for (int left = 0; left < list.Count; left += size * 2)
+            {
+                int mid = left + size - 1;
+                int right = Mathf.Min(left + 2 * size - 1, list.Count - 1);
+
+                if (mid < right)
+                    Merge(list, left, mid, right);
+            }
+        }
+    }
+
+    #endregion
     #endregion
 
     #region Utils
