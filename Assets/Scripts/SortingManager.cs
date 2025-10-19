@@ -490,14 +490,19 @@ public static class SortingManager
         }
     }
 
-    private static bool IsSorted<T>(List<T> list) where T : IComparable
+    private static bool IsSorted<T>(List<T> list, int low, int high) where T : IComparable
     {
-        for (int i = 0; i < list.Count - 1; i++)
+        for (int i = low; i < high; i++)
         {
             if (list[i].CompareTo(list[i + 1]) > 0)
                 return false;
         }
         return true;
+    }
+
+    private static bool IsSorted<T>(List<T> list) where T : IComparable
+    {
+        return IsSorted<T>(list, 0, list.Count - 1);
     }
 
     private static void Swap<T>(List<T> list, int i, int j) where T : IComparable
