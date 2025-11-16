@@ -1,20 +1,40 @@
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class SortingManager
 {
+    private static int _previousListCount = 0;
+    private static double _previousWorstCase = 0;
+
     #region O(n!)
     /// <summary>
     /// https://es.wikipedia.org/wiki/Stupid_sort
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
-    public static void BogoSort<T>(List<T> list) where T : IComparable
+    public static void BogoSort<T>(List<T> list, int maxIterations) where T : IComparable
     {
-        while (!IsSorted(list))
+        int iterations = 0;
+
+
+        while (!IsSorted(list) && iterations < maxIterations)
+        {
             Shuffle(list);
+            iterations++;
+        }
+
+        Debug.Log($"BogoSort completed in {iterations} iterations. Sorted: {IsSorted(list)}");
+        Debug.Log($"{maxIterations} is the maximum amount of iterations that were allowed.");
+
+        if (_previousListCount != list.Count)
+            _previousWorstCase = Factorial(list.Count);
+
+        Debug.Log($"BogoSort worst case iterations: {_previousWorstCase:N0}");
+
+        _previousListCount = list.Count;
     }
     #endregion
 
@@ -99,7 +119,7 @@ public static class SortingManager
 
             end = list.Count - 1;
 
-            for (int i = end - 1; i >= start; i--)
+            for (int i = end - 1; i > start; i--)
             {
                 if (list[i - 1].CompareTo(list[i]) > 0)
                 {
@@ -166,14 +186,14 @@ public static class SortingManager
     /// <param name="list"></param>
     public static void ShellSort<T>(List<T> list) where T : IComparable
     {
-        for (int gap = list.Count / 2; gap > 0; gap /= 2)
+        for (int distance = list.Count / 2; distance > 0; distance /= 2)
         {
-            for (int i = gap; i < list.Count; i++)
+            for (int i = distance; i < list.Count; i++)
             {
                 T temp = list[i];
                 int j;
-                for (j = i; j >= gap && list[j - gap].CompareTo(temp) > 0; j -= gap)
-                    list[j] = list[j - gap];
+                for (j = i; j >= distance && list[j - distance].CompareTo(temp) > 0; j -= distance)
+                    list[j] = list[j - distance];
 
                 list[j] = temp;
             }
@@ -257,34 +277,34 @@ public static class SortingManager
         int lIdx = 0;
         int rIdx = 0;
 
-        int mIdx = left;
+        int mergeIdx = left;
         while (lIdx < lSize && rIdx < rSize)
         {
             if (Left[lIdx].CompareTo(Right[rIdx]) <= 0)
             {
-                list[mIdx] = Left[lIdx];
+                list[mergeIdx] = Left[lIdx];
                 lIdx++;
             }
             else
             {
-                list[mIdx] = Right[rIdx];
+                list[mergeIdx] = Right[rIdx];
                 rIdx++;
             }
-            mIdx++;
+            mergeIdx++;
         }
 
         while (lIdx < lSize)
         {
-            list[mIdx] = Left[lIdx];
+            list[mergeIdx] = Left[lIdx];
             lIdx++;
-            mIdx++;
+            mergeIdx++;
         }
 
         while (rIdx < rSize)
         {
-            list[mIdx] = Right[rIdx];
+            list[mergeIdx] = Right[rIdx];
             rIdx++;
-            mIdx++;
+            mergeIdx++;
         }
     }
 
@@ -453,24 +473,102 @@ public static class SortingManager
 
     #endregion
 
-    #region O(n) / O(n log n)
+    #region O(n)
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/radix-sort/
     /// </summary>
     /// <param name="list"></param>
-    public static void RadixSortLSD<T>(List<T> list) where T : IComparable
+    public static void RadixSortLSD(List<int> list)
     {
+        int max = GetMax(list);
+
+        for (int exp = 1; max / exp > 0; exp *= 10)
+            CountingSort(list, exp);
+    }
+
+    private static void CountingSort(List<int> list, int exp)
+    {
+        var output = new int[list.Count];
+        int i;
+        const int expValue = 10;
+        var count = new int[expValue];
+
+        for (i = 0; i < list.Count; i++)
+            count[(list[i] / exp) % expValue]++;
+
+        for (i = 1; i < expValue; i++)
+            count[i] += count[i - 1];
+
+        for (i = list.Count - 1; i >= 0; i--)
+        {
+            int digit = (list[i] / exp) % expValue;
+
+            output[count[digit] - 1] = list[i];
+
+            count[digit]--;
+        }
+
+        for (i = 0; i < list.Count; i++)
+            list[i] = output[i];
     }
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/msd-most-significant-digit-radix-sort/
     /// </summary>
     /// <param name="list"></param>
-    public static void RadixSortMSD<T>(List<T> list) where T : IComparable
+    public static void RadixSortMSD(List<int> list)
     {
+        if (list.Count <= 1)
+            return;
 
+        int max = GetMax(list);
+
+        if (max == 0)
+            return;
+
+        int maxDigit = (int)Mathf.Floor(Mathf.Log10(Mathf.Abs(max))) + 1;
+
+        RadixSortMSD(list, 0, list.Count - 1, maxDigit);
     }
+
+    private static void RadixSortMSD(List<int> list, int low, int high, int digits)
+    {
+        if (high <= low || digits <= 0)
+            return;
+
+        int radixBase = 10;
+
+        int[] count = new int[radixBase + 2];
+
+        Dictionary<int, int> pairs = new();
+
+        for (int i = low; i <= high; i++)
+        {
+            int character = DigitAt(list[i], digits);
+            count[character + 2]++;
+        }
+
+        for (int i = 0; i < radixBase + 1; i++)
+        {
+            count[i + 1] += count[i];
+        }
+
+        for (int i = low; i <= high; i++)
+        {
+            int character = DigitAt(list[i], digits);
+
+            pairs.Add(count[character + 1]++, list[i]);
+        }
+
+        for (int i = low; i <= high; i++)
+            if (pairs.ContainsKey(i - low))
+                list[i] = pairs[i - low];
+
+        for (int i = 0; i < radixBase; i++)
+            RadixSortMSD(list, low + count[i], low + count[i + 1] - 1, digits - 1);
+    }
+
 
     #endregion
 
@@ -507,9 +605,7 @@ public static class SortingManager
 
     private static void Swap<T>(List<T> list, int i, int j) where T : IComparable
     {
-        T temp = list[i];
-        list[i] = list[j];
-        list[j] = temp;
+        (list[i], list[j]) = (list[j], list[i]);
     }
 
     private static void CompSwap<T>(List<T> list, int i, int j, int dir) where T : IComparable
@@ -524,5 +620,115 @@ public static class SortingManager
     {
         return count > 0 && Mathf.Log(count, 2) % 1 == 0;
     }
+
+    private static T GetMax<T>(List<T> list) where T : IComparable
+    {
+        T max = list[0];
+        for (int i = 1; i < list.Count; i++)
+            if (list[i].CompareTo(max) > 0)
+                max = list[i];
+        return max;
+    }
+
+    private static double Factorial(int count)
+    {
+        double result = 1;
+        for (int i = 2; i <= count; i++)
+            result *= i;
+        return result;
+    }
+
+    private static int DigitAt(int number, int index)
+    {
+        if (index <= 0)
+            return 0;
+
+        return (int)(number / Mathf.Pow(10, index - 1)) % 10;
+    }
+
+    public static void Sort(SortingVisualizer.SortingConfig sortingConfig, System.Collections.IList data)
+    {
+        switch (sortingConfig.dataType)
+        {
+            case SortingVisualizer.DataType.Int:
+                Sort(sortingConfig.algorithm, sortingConfig.bogoMaxIterations, data as List<int>);
+                break;
+            case SortingVisualizer.DataType.String:
+                Sort(sortingConfig.algorithm, sortingConfig.bogoMaxIterations, data as List<string>);
+                break;
+            default:
+                Debug.LogError("Datatype not supported");
+                break;
+        }
+    }
+
+    private static void Sort<T>(SortingVisualizer.SortingAlgorithm algorithm, int bogoMaxIt, List<T> list) where T : IComparable
+    {
+        switch (algorithm)
+        {
+            case SortingVisualizer.SortingAlgorithm.BogoSort:
+                BogoSort(list, bogoMaxIt);
+                break;
+            case SortingVisualizer.SortingAlgorithm.GnomeSort:
+                GnomeSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.BubbleSort:
+                BubbleSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.CocktailSort:
+                CocktailSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.InsertionSort:
+                InsertionSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.SelectionSort:
+                SelectionSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.ShellSort:
+                ShellSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.BitonicSort:
+                BitonicSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.MergeSort:
+                MergeSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.HeapSort:
+                HeapSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.QuickSort:
+                QuickSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.IntroSort:
+                IntroSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.AdaptiveMergeSort:
+                AdaptiveMergeSort(list);
+                break;
+            case SortingVisualizer.SortingAlgorithm.RadixMSD:
+                if (IsNumeric<T>())
+                    RadixSortMSD(list as List<int>);
+                else
+                    Debug.Log("Radix does not work for non-numerics");
+                break;
+            case SortingVisualizer.SortingAlgorithm.RadixLSD:
+                if (IsNumeric<T>())
+                    RadixSortLSD(list as List<int>);
+                else
+                    Debug.Log("Radix does not work for non-numerics");
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static bool IsNumeric<T>() where T : IComparable
+    {
+        return (typeof(T) == typeof(int) || typeof(T) == typeof(float) ||
+                typeof(T) == typeof(long) || typeof(T) == typeof(short) ||
+                typeof(T) == typeof(decimal) || typeof(T) == typeof(double));
+
+    }
+
     #endregion
 }
