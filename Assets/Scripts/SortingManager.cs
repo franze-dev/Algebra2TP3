@@ -9,6 +9,11 @@ public static class SortingManager
     private static int _previousListCount = 0;
     private static double _previousWorstCase = 0;
 
+    //O(n!) Factorial time complexity
+    // - n! is the factorial of n, which grows extremely fast. This is because 
+    // a factorial represents the number of ways to arrange n items, and as n increases,
+    // the number of arrangements increases dramatically. The factorial is the multiplication of 
+    // all positive integers up to n. Es la cantidad de permutaciones posibles de n elementos.
     #region O(n!)
     /// <summary>
     /// https://es.wikipedia.org/wiki/Stupid_sort
@@ -18,7 +23,6 @@ public static class SortingManager
     public static void BogoSort<T>(List<T> list, int maxIterations) where T : IComparable
     {
         int iterations = 0;
-
 
         while (!IsSorted(list) && iterations < maxIterations)
         {
@@ -38,9 +42,16 @@ public static class SortingManager
     }
     #endregion
 
+    //O(n^2) Quadratic time complexity
     #region O(n^2)
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/gnome-sort-a-stupid-one/
+    /// Each time an element is out of order, it is swapped with the previous element and the index is decremented.
+    /// This is a stupid sort algorithm because each time an element is out of order, it goes back to the previous element,
+    /// which means it will check each element multiple times, even if it is already in order. 
+    /// It could even go all the way back to the start if it finds an element that is smaller than all previous elements, and check
+    /// all of the list again. It's highly inefficient in general. The worst case possible is when the list is sorted in reverse order.
+    /// It's called gnome sort because it is similar to the way a gnome sorts a line of flower pots.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -59,12 +70,16 @@ public static class SortingManager
             }
         }
     }
+
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/bubble-sort-algorithm/
+    /// The bubble sort algorithm works by repeatedly stepping through the list until it is sorted.
+    /// To do this it compares each pair of adjacent items and swaps them if they are in the wrong order,
+    /// the list is already sorted if no swaps are needed on a pass through the list. The worst case is when
+    /// the list is sorted in reverse order, because each element will need to be swapped with every other element.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
-    /// <exception cref="NotImplementedException"></exception>
     public static void BubbleSort<T>(List<T> list) where T : IComparable
     {
         bool swapped;
@@ -89,6 +104,11 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/cocktail-sort/
+    /// The cocktail sort algorithm is a variation of bubble sort that 
+    /// sorts in both directions on each pass through the list.
+    /// First it pushes all the largest elements to the end of the list,
+    /// then it pushes all the smallest elements to the beginning of the list.
+    /// It's called cocktail sort because the elements are pushed back and forth like a cocktail shaker.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -134,10 +154,12 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/insertion-sort-algorithm/
+    /// The insertion sort takes each element from the list and inserts it into its correct position.
+    /// That is done by comparing the current element with the previous elements (so, already sorted elements), and 
+    /// inserts it in the right place. The worst case is when the list is sorted in reverse order. 
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
-    /// <exception cref="NotImplementedException"></exception>
     public static void InsertionSort<T>(List<T> list) where T : IComparable
     {
         InsertionSort(list, 0, list.Count - 1);
@@ -161,6 +183,9 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/selection-sort-algorithm-2/
+    /// The selection sort algorithm works by repeatedly finding the minimum element from the unsorted part of the list
+    /// and swapping it with the first unsorted element. The worst case is when the list is sorted in reverse order, since it
+    /// has to go through the entire list to find the minimum element each time.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -178,22 +203,28 @@ public static class SortingManager
 
     #endregion
 
+    //O(n log^2 n) Log-linear squared time complexity
+    // - 
     #region O(n log^2 n)
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/shell-sort/
+    /// It's an optimization over insertion sort. It works by comparing elements that are far apart by a certain gap.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
     public static void ShellSort<T>(List<T> list) where T : IComparable
     {
-        for (int distance = list.Count / 2; distance > 0; distance /= 2)
+        //gap starts at n/2 and reduces to 1. This is log(n) times
+        for (int gap = list.Count / 2; gap > 0; gap /= 2)
         {
-            for (int i = distance; i < list.Count; i++)
+            // goes through all elements, n times if gap is 1.
+            for (int i = gap; i < list.Count; i++)
             {
                 T temp = list[i];
                 int j;
-                for (j = i; j >= distance && list[j - distance].CompareTo(temp) > 0; j -= distance)
-                    list[j] = list[j - distance];
+                // log(n), insertion sort with gap. j decrements by gap which is log(n) times
+                for (j = i; j >= gap && list[j - gap].CompareTo(temp) > 0; j -= gap)
+                    list[j] = list[j - gap];
 
                 list[j] = temp;
             }
@@ -202,6 +233,8 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/bitonic-sort/
+    /// The bitonic sort algorithm works by creating a bitonic sequence (a sequence that first increases and then decreases)
+    /// The size of the list must be a power of two.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -215,8 +248,10 @@ public static class SortingManager
         if (!IsPowerOfTwo(list.Count))
             throw new ArgumentException("BitonicSort: List size must be a power of two.");
 
+        //n
         if (count > 1)
         {
+            //log(n)
             int k = count / 2;
             BitonicSort(list, low, k, 1);
             BitonicSort(list, low + k, k, 0);
@@ -228,6 +263,7 @@ public static class SortingManager
     {
         if (count > 1)
         {
+            //log(n)
             int k = count / 2;
             for (int i = low; i < low + k; i++)
                 CompSwap(list, i, i + k, dir);
@@ -251,8 +287,10 @@ public static class SortingManager
 
     private static void MergeSort<T>(List<T> list, int left, int right) where T : IComparable
     {
+        //n
         if (left < right)
         {
+            //log(n)
             int mid = (left + (right - 1)) / 2;
             MergeSort(list, left, mid);
             MergeSort(list, mid + 1, right);
@@ -310,6 +348,14 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/heap-sort/
+    /// It's an optimized selection sort that uses a binary heap data structure.
+    /// It makes a binary tree.
+    /// It takes the first node (i) and it defines its children, left and right nodes. It
+    /// does this same thing for the rest of the list. If the children are larger than the parent node,
+    /// then it swaps them. 
+    /// After that, you have the largest element in the first node. All you have to do is swap it with 
+    /// the last element, now you can ignore that last element. Then you repeat the process for the rest of the list, 
+    /// only that instead of swapping the maximum with the last element you do it with the second to last element, and so on.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -352,6 +398,12 @@ public static class SortingManager
 
     /// <summary>
     /// https://www.geeksforgeeks.org/dsa/quick-sort-algorithm/
+    /// It sorts the list by partitioning it around a pivot element. It will move all
+    /// elements smaller than the pivot to its left, and all elements larger than the pivot to its right,
+    /// and will partition that way recursively until the list is sorted. The list is sorted when
+    /// there's no values to place on either side of the pivot.
+    /// The pivot can be the first, last, random or median element. Since this one has the pivot at
+    /// the last element, the worst case is when the list is already sorted.    
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
@@ -363,14 +415,24 @@ public static class SortingManager
 
     private static void QuickSort<T>(List<T> list, int low, int high) where T : IComparable
     {
+        //n
         if (low < high)
         {
+            //log(n)
             int pi = Partition(list, low, high);
             QuickSort(list, low, pi - 1);
             QuickSort(list, pi + 1, high);
         }
     }
 
+    /// <summary>
+    /// Lomuto partition. It keeps track of the index of the smaller element.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="low"></param>
+    /// <param name="high"></param>
+    /// <returns></returns>
     private static int Partition<T>(List<T> list, int low, int high) where T : IComparable
     {
         T pivot = list[high];
@@ -395,6 +457,7 @@ public static class SortingManager
     /// <exception cref="NotImplementedException"></exception>
     public static void IntroSort<T>(List<T> list) where T : IComparable
     {
+        // 2 * log(n) / log(2)
         int depthLimit = 2 * (int)Mathf.Floor(Mathf.Log(list.Count) / Mathf.Log(2));
 
         IntroSort(list, 0, list.Count - 1, depthLimit);
@@ -425,6 +488,15 @@ public static class SortingManager
             InsertionSort(list, low, high);
     }
 
+    /// <summary>
+    /// Returns the index of the median of the three values.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
+    /// <param name="i"></param>
+    /// <param name="j"></param>
+    /// <param name="k"></param>
+    /// <returns></returns>
     private static int FindPivot<T>(List<T> list, int i, int j, int k) where T : IComparable
     {
         T a = list[i];
